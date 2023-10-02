@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 import BookModel from "../../models/BookModel";
 import { SpinnerLoading } from "../Utils/SpinnerLoading";
+import { StarsReview } from "../Utils/StarsReview";
+import { CheckoutAndReviewBox } from "./CheckoutAndReviewBox";
+import ReviewModel from "../../models/ReviewModel";
+import { LatestReviews } from "./LatestReviews";
 
 export const BookCheckoutPage = () => {
 
     const [book, setBook] = useState<BookModel>();
     const [isLoadingBook, setIsLoadingBook] = useState(true);
     const [httpError, setHttpError] = useState(null);
+
+    //Review State
+
+    const [reviews, setReviews]=useState<ReviewModel[]>([]);
+    const [totalStars, setTotalStars]=useState(0);
+    const [isLoadingReview, setIsLoadingReview]=useState(true);
 
     // By doing this we obtain the book id from the url
     const bookId = (window.location.pathname).split('/')[2];
@@ -47,10 +57,58 @@ export const BookCheckoutPage = () => {
             setHttpError(error.message);
         })
 
+
+    }, [])
+
+    useEffect(()=>{
+        
+        const fetchReviews = async () => {
+
+            const reviewUrl: string = `http://localhost:8080/api/reviews/search/findReviewByBookId?bookId=${bookId}`;
+
+            const responseReviews = await fetch(reviewUrl);
+
+            if (!responseReviews.ok) {
+                throw new Error('Something went wrong');
+            }
+
+            const responseReviewsJson = await responseReviews.json();
+            const responseReviewsData= responseReviewsJson._embedded.reviews;
+            const loadedReviews:ReviewModel[]=[];
+
+            // Taking advantage of the for loop we calculate a weighted average of the rating
+
+            let weightedStarReviews:number=0
+            for(const key in responseReviewsData){
+                loadedReviews.push({
+                    id:responseReviewsData[key].id,
+                    userEmail:responseReviewsData[key].userEmail,
+                    date:responseReviewsData[key].date,
+                    rating:responseReviewsData[key].rating,
+                    book_id:responseReviewsData[key].bookId,
+                    reviewDescription:responseReviewsData[key].reviewDescription,
+                })
+
+                weightedStarReviews+=responseReviewsData[key].rating;
+            }
+
+            weightedStarReviews=Number((weightedStarReviews/responseReviewsData.length).toFixed(1));
+
+            setTotalStars(weightedStarReviews);
+
+            setReviews(loadedReviews);
+            setIsLoadingReview(false);
+        };
+
+        fetchReviews().catch((error: any) => {
+            //In case it fails
+            setIsLoadingReview(false);
+            setHttpError(error.message);
+        })
     }, [])
 
 
-    if (isLoadingBook) {
+    if (isLoadingBook || isLoadingReview ) {
         return (
             <SpinnerLoading />
         )
@@ -86,10 +144,13 @@ export const BookCheckoutPage = () => {
                             <h2> {book?.title}</h2>
                             <h5 className="text-primary">{book?.author}</h5>
                             <p className="lead">{book?.description}</p>
+                            <StarsReview rating={totalStars} size={32} />
                         </div>
                     </div>
+                    <CheckoutAndReviewBox book={book} mobile={false} />
                 </div>
                 <hr />
+                <LatestReviews reviews={reviews} bookId={book?.id} mobile={false}></LatestReviews>
             </div>
 
             {/* Mobile */}
@@ -110,10 +171,14 @@ export const BookCheckoutPage = () => {
                         <h2> {book?.title}</h2>
                         <h5 className="text-primary">{book?.author}</h5>
                         <p className="lead">{book?.description}</p>
+                        <StarsReview rating={totalStars} size={32} />
                     </div>
                 </div>
+                <CheckoutAndReviewBox book={book} mobile={true} />
                 <hr />
+                <LatestReviews reviews={reviews} bookId={book?.id} mobile={true}></LatestReviews>
             </div>
+
         </div>
     );
 }
