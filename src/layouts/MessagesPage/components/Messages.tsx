@@ -25,7 +25,7 @@ export const Messages = () => {
 
             if (authState && authState.isAuthenticated) {
                 const userEmail = authState.accessToken?.claims.sub;
-                const url = `http://localhost:8080/api/messages/search/findByUserEmail?userEmail=${userEmail}&page=${currentPage - 1}&size=${messagesPerPage}`;
+                const url = `${process.env.REACT_APP_API}/messages/search/findByUserEmail?userEmail=${userEmail}&page=${currentPage - 1}&size=${messagesPerPage}`;
 
                 const requestOptions = {
                     method: 'GET',

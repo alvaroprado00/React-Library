@@ -22,7 +22,7 @@ export const SearchBooksPage = () => {
 
         const fetchBooks = async () => {
 
-            const baseUrl: string = "http://localhost:8080/api/books";
+            const baseUrl: string = `${process.env.REACT_APP_API}/books`;
 
             let url: string = '';
 
@@ -68,6 +68,7 @@ export const SearchBooksPage = () => {
             setIsLoading(false);
             setHttpError(error.message);
         })
+        window.scrollTo(0,0);
 
     }, [currentPage, searchUrl])
 

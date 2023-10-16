@@ -32,7 +32,7 @@ export const AdminMessages =()=>{
 
         if(authState && authState.isAuthenticated && id!==null && response!==''){
 
-            const url =`http://localhost:8080/api/messages/secure/answer/message`;
+            const url =`${process.env.REACT_APP_API}/messages/secure/answer/message`;
             const answer = new AdminRequestModel(id, response);
             const requestOptions={
                 method:'PUT',
@@ -59,7 +59,7 @@ export const AdminMessages =()=>{
         const fetchMessages = async ()=>{
             if(authState && authState.accessToken){
 
-                const url = `http://localhost:8080/api/messages/search/findByClosed?closed=false&page=${currentPage-1}&size=${messagesPerPage}`;
+                const url = `${process.env.REACT_APP_API}/messages/search/findByClosed?closed=false&page=${currentPage-1}&size=${messagesPerPage}`;
                 const requestOptions={
                     method:'GET',
                     headers:{

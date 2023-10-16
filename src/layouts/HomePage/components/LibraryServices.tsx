@@ -15,7 +15,7 @@ export const LibraryServices = () => {
                     <p className="lead">
                         If you cannot find what you are looking for,
                         send our library admin's a personal message!
-                    </p>\
+                    </p>
                     <div className="d-grid gap-2 justify-content-md-start mb-4 mb-lg-3">
                         {
                             authState?.isAuthenticated ?
