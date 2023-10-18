@@ -39,6 +39,9 @@ export const BookCheckoutPage = () => {
     const [isCheckedout, setIsCheckedout] = useState(false);
     const [isLoadingIsCheckedout, setIsLoadingIsCheckedout] = useState(true);
 
+    // Payment
+    const [displayError, setDisplayError] = useState(false);
+
     // By doing this we obtain the book id from the url
     const bookId = (window.location.pathname).split('/')[2];
 
@@ -131,7 +134,7 @@ export const BookCheckoutPage = () => {
     useEffect(() => {
 
         const fetchIsReviewLeft = async () => {
-            if ( authState && authState?.isAuthenticated) {
+            if (authState && authState?.isAuthenticated) {
                 const url = `${process.env.REACT_APP_API}/reviews/secure/user/book?bookId=${bookId}`;
                 const requestOptions = {
                     method: "GET",
@@ -252,21 +255,23 @@ export const BookCheckoutPage = () => {
         const checkoutBookResponse = await fetch(url, requestOptions);
 
         if (!checkoutBookResponse.ok) {
+            setDisplayError(true);
             throw new Error('Error when checking out book');
         }
+        setDisplayError(false);
         setIsCheckedout(true);
 
     }
 
-    async function submitReview(starInput:number, reviewDescription:string){
+    async function submitReview(starInput: number, reviewDescription: string) {
 
-        let bookId:number=0;
+        let bookId: number = 0;
 
-        if(book?.id){
-            bookId=book.id;
+        if (book?.id) {
+            bookId = book.id;
         }
 
-        const reviewRequestModel=new ReviewRequestModel(starInput, bookId, reviewDescription);
+        const reviewRequestModel = new ReviewRequestModel(starInput, bookId, reviewDescription);
 
         const url = `${process.env.REACT_APP_API}/reviews/secure`;
         const requestOptions = {
@@ -275,7 +280,7 @@ export const BookCheckoutPage = () => {
                 'Authorization': `Bearer ${authState?.accessToken?.accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body:JSON.stringify(reviewRequestModel),
+            body: JSON.stringify(reviewRequestModel),
         }
         const submitReviewResponse = await fetch(url, requestOptions);
 
@@ -289,6 +294,12 @@ export const BookCheckoutPage = () => {
         <div>
             {/* Desktop */}
             <div className="container d-none d-lg-block">
+
+                {
+                    displayError && <div className="alert alert-danger mt-3" role="alert">
+                        Please pay outstanding fees and/or return late book(s).
+                    </div>
+                }
                 <div className="row mt-5">
                     <div className="col-sm-2 col-md-2 d-flex align-items-center">
 
@@ -312,7 +323,7 @@ export const BookCheckoutPage = () => {
                     </div>
                     <CheckoutAndReviewBox book={book} mobile={false} currentLoans={currentLoansCount}
                         isAuthenticated={authState?.isAuthenticated} isCheckedout={isCheckedout}
-                        checkoutBook={checkoutBook} isReviewLeft={isReviewLeft} submitReview={submitReview}/>
+                        checkoutBook={checkoutBook} isReviewLeft={isReviewLeft} submitReview={submitReview} />
                 </div>
                 <hr />
                 <LatestReviews reviews={reviews} bookId={book?.id} mobile={false}></LatestReviews>
@@ -320,6 +331,11 @@ export const BookCheckoutPage = () => {
 
             {/* Mobile */}
             <div className="container d-lg-none mt-5">
+                {
+                    displayError && <div className="alert alert-danger mt-3" role="alert">
+                        Please pay outstanding fees and/or return late book(s).
+                    </div>
+                }
                 <div className="d-flex justify-content-center align-items-center">
 
                     {
